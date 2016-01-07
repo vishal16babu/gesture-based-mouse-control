@@ -1,20 +1,22 @@
-
-#include <dos.h>
-union REGS in, out;
-
-void detect_mouse ()
+#include <linux/input.h>
+#include <fcntl.h>
+#include <stdio.h>
+ #include <unistd.h>
+int main(int argc, char **argv)
 {
-	in.x.ax = 0;
-	int86 (0X33,&in,&out);   //invoke interrupt
-	if (out.x.ax == 0)
-		printf ("\nMouse Failed To Initialize");
-	else
-		printf ("\nMouse was Succesfully Initialized");
+while(1) {
+int fd;
+if ((fd = open("/dev/input/mice", O_RDONLY)) < 0) {
+   // perror("evdev open");
+    //exit(1);
 }
 
-int main ()
-{
-	detect_mouse ();
-	getch ();
-	return 0;
+struct input_event ev;
+
+
+    read(fd, &ev, sizeof(struct input_event));
+    printf("value %d, type %d, code %d\n",ev.value,ev.type,ev.code);
+}
+
+return 0;
 }
