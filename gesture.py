@@ -4,15 +4,16 @@ import math
 cap = cv2.VideoCapture(0)
 while(cap.isOpened()):
     ret, img = cap.read()
-    cv2.rectangle(img,(300,300),(100,100),(0,255,0),0)
-    crop_img = img[100:300, 100:300]
+    img = cv2.flip(img,1)
+    cv2.rectangle(img,(600,600),(0,0),(0,255,0),0)
+    crop_img = img[0:600, 0:600]
     grey = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
     value = (35, 35)
     blurred = cv2.GaussianBlur(grey, value, 0)
     _, thresh1 = cv2.threshold(blurred, 127, 255,
                                cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
     cv2.imshow('Thresholded', thresh1)
-    contours, hierarchy , shit_max = cv2.findContours(thresh1.copy(),cv2.RETR_TREE, \
+    contours, hierarchy  = cv2.findContours(thresh1.copy(),cv2.RETR_TREE, \
             cv2.CHAIN_APPROX_NONE)
     max_area = -1
     for i in range(len(contours)):
