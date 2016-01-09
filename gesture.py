@@ -1,12 +1,15 @@
 import cv2
 import numpy as np
 import math
+import os
 cap = cv2.VideoCapture(0)
+mouse_x = 0
+mouse_y = 0
 while(cap.isOpened()):
     ret, img = cap.read()
     img = cv2.flip(img,1)
-    cv2.rectangle(img,(600,600),(0,0),(0,255,0),0)
-    crop_img = img[0:600, 0:600]
+    cv2.rectangle(img,(1800,1800),(0,0),(0,255,0),0)
+    crop_img = img[0:1800, 0:1800]
     grey = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
     value = (35, 35)
     blurred = cv2.GaussianBlur(grey, value, 0)
@@ -44,15 +47,20 @@ while(cap.isOpened()):
         angle = math.acos((b**2 + c**2 - a**2)/(2*b*c)) * 57
         if angle <= 90:
             count_defects += 1
+            print(str(far[0])+" "+str(far[1]))
+            mouse_x = far[0]*0.1-mouse_x
+            mouse_y = far[1]*0.1-mouse_y
+            os.system("xdotool mousemove_relative --  "+str(mouse_x)+" "+str(mouse_y))
+
             cv2.circle(crop_img,far,1,[0,0,255],-1)
         #dist = cv2.pointPolygonTest(cnt,far,True)
         cv2.line(crop_img,start,end,[0,255,0],2)
         #cv2.circle(crop_img,far,5,[0,0,255],-1)
     if count_defects == 1:
-        cv2.putText(img,"I am Vipul", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+        cv2.putText(img,"I am Vishal", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
     elif count_defects == 2:
-        str = "This is a basic hand gesture recognizer"
-        cv2.putText(img, str, (5,50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
+        str1 = "This is a basic hand gesture recognizer"
+        cv2.putText(img, str1, (5,50), cv2.FONT_HERSHEY_SIMPLEX, 1, 2)
     elif count_defects == 3:
         cv2.putText(img,"This is 4 :P", (50,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
     elif count_defects == 4:

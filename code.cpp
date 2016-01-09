@@ -1,8 +1,8 @@
-﻿#include <opencv/cv.h>
-#include <opencv/highgui.h>
+﻿#include <cv.h>
+#include <highgui.h>
 #include <stdio.h>
 
-    
+using namespace cv;
     CvCapture *capture;
     
     IplImage *frame; 
@@ -50,14 +50,12 @@ int main()
     capture = cvCaptureFromCAM(0) ;
     cvNamedWindow("Webcam",0);
     //cvNamedWindow("Virtual hand",0);
-    writer = cvCreateVideoWriter("palm_output2.avi",CV_FOURCC('M','J','P','G'),15,cvSize(640,480),1);
-          
+    //writer = cvCreateVideoWriter("palm_output2.avi",CV_FOURCC('M','J','P','G'),15,cvSize(640,480),1);
     while(1)
     {
         frame = cvQueryFrame(capture);
         //cvWriteFrame(writer,frame);
         cvCvtColor(frame,frame,CV_BGR2HSV); 
-      
       // IMPORTANT!!
       // The following FOR loop generates binary image which contains ONLY the arm.
       // Please replace the following FOR loop with your own method to generate the ideal output image.
@@ -67,16 +65,16 @@ int main()
       {
         for(int j=0;j<frame->width;j++)
         {
-        //if(frame->imageData[i*frame->widthStep+(j*3)+2] < 90 && frame->imageData[i*frame->widthStep+(j*3)+2] > 0 && frame->imageData[i*frame->widthStep+(j*3)+1] < 0) 
+        if(frame->imageData[i*frame->widthStep+(j*3)+2] < 90 && frame->imageData[i*frame->widthStep+(j*3)+2] > 0 && frame->imageData[i*frame->widthStep+(j*3)+1] < 0) 
           if(frame->imageData[i*frame->widthStep+(j*3)] < 50 || frame->imageData[i*frame->widthStep+(j*3)+2] > 170) 
              { mask->imageData[i*mask->width+j] = 255;}
           else mask->imageData[i*mask->width+j] = 0;
         }
       }
-        
+ 
         cvCvtColor(frame,frame,CV_HSV2BGR);
         cvCopy(frame,frame2);
-        //cvErode(mask,mask,0,2);
+        cvErode(mask,mask,0,2);
         
         cvErode(mask,mask,0,1); //ERODE first then DILATE to eliminate the noises.
         cvDilate(mask,mask,0,1);
@@ -87,12 +85,13 @@ int main()
 
         // We choose the first contour in the list which is longer than 650.
         // You might want to change the threshold to which works the best for you.
+
         while(contours && contours->total <= 650)
         {
           contours = contours->h_next;
         }
 
-    cvDrawContours( frame, contours, CV_RGB(100,100,100), CV_RGB(0,255,0), 1, 2, CV_AA, cvPoint(0,0) );
+    //cvDrawContours( frame, contours, CV_RGB(100,100,100), CV_RGB(0,255,0), 1, 2, CV_AA, cvPoint(0,0) );
 
         //
         // Use a rectangle to cover up the contour.
@@ -103,42 +102,41 @@ int main()
           contourcenter =  cvMinAreaRect2(contours,0);
           armcenter.x = cvRound(contourcenter.center.x);
           armcenter.y = cvRound(contourcenter.center.y);
-          //cvCircle(frame,armcenter,10,CV_RGB(255,255,255),-1,8,0);
+          cvCircle(frame,armcenter,10,CV_RGB(255,255,255),-1,8,0);
           getconvexhull();
           fingertip();
           hand();
         }
 
 
-        cvShowImage("Webcam",frame);
+        //cvShowImage("Webcam",frame);
         
         //cvShowImage("Virtual hand",virtualhand);
-        
+        /*
         if(savepic)
         {
            int framenum = (int)cvGetCaptureProperty(capture,CV_CAP_PROP_POS_FRAMES);
            char name[10];
            //itoa(framenum,name,10);
            sprintf(name,"%d",framenum);
-           sprintf(name,"%sfix4.jpg",name);
-           //printf("%s\n",name);
-           //cvSaveImage(name,frame);
+           //sprintf(name,"%sfix4.jpg",name);
+           printf("%s\n",name);
+           cvSaveImage(name,frame);
            savepic = false;           
         }
-        
-        //printf("FPS:%d\n",(int)cvGetCaptureProperty(capture,CV_CAP_PROP_FPS));
+*/
+        printf("FPS:%d\n",(int)cvGetCaptureProperty(capture,CV_CAP_PROP_FPS));
 
-       // cvZero(virtualhand);
-        
-        if(cvWaitKey(1)>=0 || !frame)
+        //cvZero(virtualhand);
+        if(cvWaitKey(1)>=0 )
         {
-              //cvSaveImage("normal.jpg",frame2);
+              cvSaveImage("normal.jpg",frame2);
               break;
         }
     }       
     cvReleaseCapture(&capture);
     cvDestroyWindow("Webcam");
-    //cvDestroyWindow("Virtual hand");
+    cvDestroyWindow("Virtual hand");
     cvReleaseVideoWriter(&writer);
 }
 
